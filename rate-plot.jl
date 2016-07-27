@@ -1,7 +1,11 @@
 println("Welcome to rate-plot.jl, where rates for CIRISS are plotted")
 using DataFrames
+using Gadfly
 
-path = "/home/cns/new_losalamos/"
+path = "/home/cns/git_reading_room/losalamos/"
+outfile = "rates-plot.pdf"
+xmax = 1e16
+xmin = 1e11
 
 reactions_outpule_filename = "ozone_reactions.csv"
 reactionOutput = path*reactions_outpule_filename
@@ -79,6 +83,26 @@ function reactionclass(reactants,products,species)
 end
 
 #=
+This function takes the species names and makes proper superscripts and subscripts
+=#
+function formatMolecule(specieslist)
+  i = 1
+  for species in specieslist
+    species = replace(species,"+","<sup>+</sup> ")
+    species = replace(species,"-","<sup>-</sup> ")
+    for letter in species
+      test = tryparse(Int64,"$letter")
+      if ( isnull(test) == false )
+        species = replace(species,"$letter","<sub>$letter</sub> ")
+      end
+    end
+    specieslist[i] = species
+    i += 1
+  end
+  return specieslist
+end
+
+#=
 Generate the dataframes containing the input and output dataframes
 =#
 println("Generating initial dataframes")
@@ -86,7 +110,7 @@ ozoneReactions = readtable(
                             reactionOutput,
                             separator = ',',
                             header = true,
-#                            names = [:R1,:R2,:P1,:P2,:P3,:Fluence],
+                            names = [:R1,:R2,:P1,:P2,:P3,:Fluence],
                             eltypes = [Int64,Int64,Int64,Int64,Int64,Float64]
                             )
 println("Generated dataframe of reactions output")
@@ -106,6 +130,15 @@ reactions = readtable(
                       eltypes = [UTF8String,UTF8String,UTF8String,UTF8String,UTF8String]
 )
 println("Generated reactions input dataframe")
+println(reactions[:R1])
+
+# Format strings in each dataframe
+# reactions[:R1] = formatMolecule(reactions[:R1])
+# reactions[:R2] = formatMolecule(reactions[:R2])
+# reactions[:P1] = formatMolecule(reactions[:P1])
+# reactions[:P2] = formatMolecule(reactions[:P2])
+# reactions[:P3] = formatMolecule(reactions[:P3])
+# species[:Name] = formatMolecule(species[:Name])
 
 #=
 Add reactions Type column to reactions dataframe and determine which one
@@ -175,9 +208,9 @@ for i in 1:size(ozoneReactions[:R1],1)
   if ozoneReactions[:Fluence][i] > fluenceLimit
     rateAnalytics = vcat(rateAnalytics,transpose(reactions[:Count]))
     reactions[:Count] = 0
-    fluenceLimit += 0.1*fluenceLimit
+    fluenceLimit += 0.7*fluenceLimit
     fluenceArr = vcat(fluenceArr,fluenceLimit)
-    println("New fluence limit = $fluenceLimit")
+#    println("New fluence limit = $fluenceLimit")
   end
 end
 
@@ -284,33 +317,38 @@ end
 
 println("Now generating plots")
 p1 = plot(
-          proddf[1e16.>proddf[:Fluence].>1e12,:],
+          proddf[xmax.>proddf[:Fluence].>xmin,:],
+#          proddf,
           x="Fluence",
           y="PercentTotal",
           color="label",
-          Geom.smooth,
+#          Geom.smooth,
+          Geom.line,
           Guide.title("Production Reactions"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=1E12,maxvalue=1e16)
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
          )
 
+println("Plotted p1")
 
 p2 = plot(
-          destdf[1e16.>destdf[:Fluence].>1e12,:],
+          destdf[xmax.>destdf[:Fluence].>xmin,:],
           x="Fluence",
           y="PercentTotal",
           color="label",
-          Geom.smooth,
+#          Geom.smooth,
+          Geom.line,
           Guide.title("Destruction Reactions"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=1E12,maxvalue=1e16)
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
          )
 
 
+println("Plotted p2")
 
 totProdPercent = zeros(0)
 totDestPercent = zeros(0)
@@ -339,19 +377,20 @@ totdf = vcat(
 
 
 p3 = plot(
-          totdf[1e16.>totdf[:Fluence].>1e12,:],
+          totdf[xmax.>totdf[:Fluence].>xmin,:],
           x="Fluence",
           y="PercentTotal",
           color="label",
-          Geom.smooth,
+#          Geom.smooth,
+          Geom.line,
           Guide.title("Relative Production and Destruction"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
           #Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=1E12,maxvalue=1e16)
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
          )
 
 println("Generating final output pdf")
-draw(PDF("/home/cns/new_losalamos/rate_plots.pdf",6inch,9inch),vstack(p1,p2,p3))
+draw(PDF(path*outfile,6inch,9inch),vstack(p1,p2,p3))
 
 println("Ending rate-plot.jl!")

@@ -5,23 +5,23 @@ using Colors
 
 
 # General plot/data variables
-path     = "/Volumes/Untitled/new_images/" #"/home/cns/Desktop/"
-infile   = "f6c.csv"
-outfile  = "f6c.pdf"
-temp     = "15" #K
+path     = "/home/cns/new_images/" #"/home/cns/Desktop/"
+infile   = "f5a.csv"
+outfile  = "f5a.pdf"
+temp     = "24" #K
 logn     = "4" #log(nH2)
 title    = "T=$temp K, n<sub>H</sub>=10<sup>$logn</sup> cm<sup>-3</sup>" #ζ=10<sup>-17</sup> s<sup>-1</sup>"
 ylabel   = "[HCO<sup>+</sup>]/[DCO<sup>+</sup>]" #"[HCO<sup>+</sup>]/[DCO<sup>+</sup>]" #"OPR(H<sub>2</sub>)"  #"n<sub>X</sub>/n<sub>H</sub>"
 keylabel = "Initial OPR" #"ζ (s<sup>-1</sup>)"
-xmax     = 10^(-15.0)
+xmax     = 10^(-14.0)
 xmin     = 10^(-18.0)
-ymax     = 10^(3.0)
+ymax     = 10^(5.0)
 ymin     = 10^(0.0)
 obs      = true #true
 obsxmin  = xmin
 obsxmax  = xmax
-obsymin  = 18 #600 #18
-obsymax  = 50 #800 #50
+obsymin  = 600 #600 #18
+obsymax  = 800 #800 #50
 plotType = 3
 
 #=

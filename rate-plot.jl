@@ -2,10 +2,22 @@ println("Welcome to rate-plot.jl, where rates for CIRISS are plotted")
 using DataFrames
 using Gadfly
 
-path = "/home/cns/git_reading_room/losalamos/"
+path = "/home/cns/losalamos/"
 outfile = "rates-plot.pdf"
-xmax = 1e16
-xmin = 1e11
+xmax = 1e15
+xmin = 1e13
+
+plottheme = Gadfly.Theme(
+                        line_width=2pt,
+                        minor_label_font_size=13pt,
+                        minor_label_color=colorant"black",
+                        major_label_font_size=15pt,
+                        major_label_color=colorant"black",
+                        key_label_color=colorant"black",
+                        key_title_color=colorant"black",
+                        key_title_font_size=15pt,
+                        key_label_font_size=13pt,
+                        grid_color=colorant"black")
 
 reactions_outpule_filename = "ozone_reactions.csv"
 reactionOutput = path*reactions_outpule_filename
@@ -133,12 +145,12 @@ println("Generated reactions input dataframe")
 println(reactions[:R1])
 
 # Format strings in each dataframe
-# reactions[:R1] = formatMolecule(reactions[:R1])
-# reactions[:R2] = formatMolecule(reactions[:R2])
-# reactions[:P1] = formatMolecule(reactions[:P1])
-# reactions[:P2] = formatMolecule(reactions[:P2])
-# reactions[:P3] = formatMolecule(reactions[:P3])
-# species[:Name] = formatMolecule(species[:Name])
+reactions[:R1] = formatMolecule(reactions[:R1])
+reactions[:R2] = formatMolecule(reactions[:R2])
+reactions[:P1] = formatMolecule(reactions[:P1])
+reactions[:P2] = formatMolecule(reactions[:P2])
+reactions[:P3] = formatMolecule(reactions[:P3])
+species[:Name] = formatMolecule(species[:Name])
 
 #=
 Add reactions Type column to reactions dataframe and determine which one
@@ -208,7 +220,7 @@ for i in 1:size(ozoneReactions[:R1],1)
   if ozoneReactions[:Fluence][i] > fluenceLimit
     rateAnalytics = vcat(rateAnalytics,transpose(reactions[:Count]))
     reactions[:Count] = 0
-    fluenceLimit += 0.7*fluenceLimit
+    fluenceLimit += 0.2*fluenceLimit
     fluenceArr = vcat(fluenceArr,fluenceLimit)
 #    println("New fluence limit = $fluenceLimit")
   end
@@ -281,6 +293,7 @@ for i in 1:size(percentRates,2)
   r2 = reactions[:R2][i]
   prods = [reactions[:P1][i]; reactions[:P2][i];reactions[:P3][i]]
   rname = "$r1 + $r2 -> "
+  reactants = "$r1 + $r2"
   pcount = 0
   for q in 1:3
     if pcount == 0
@@ -298,19 +311,22 @@ for i in 1:size(percentRates,2)
     proddf = vcat(proddf,DataFrame(
                                    Fluence=fluenceArr,
                                    PercentTotal=percentRates[:,i],
-                                   label="$rname"
+                                  #  label="$rname"
+                                   label="$reactants"
                                    ))
   elseif in(i,destReacts)
     destdf = vcat(destdf,DataFrame(
                                    Fluence=fluenceArr,
                                    PercentTotal=percentRates[:,i],
-                                   label="$rname"
+                                  #  label="$rname"
+                                   label="$reactants"
                                    ))
   elseif in(i,neutReacts)
     neutdf = vcat(neutdf,DataFrame(
                                    Fluence=fluenceArr,
                                    PercentTotal=percentRates[:,i],
-                                   label="$rname"
+                                  #  label="$rname"
+                                   label="$reactants"
                                    ))
   end
 end
@@ -322,15 +338,18 @@ p1 = plot(
           x="Fluence",
           y="PercentTotal",
           color="label",
-#          Geom.smooth,
-          Geom.line,
-          Guide.title("Production Reactions"),
+          Geom.smooth,
+#          Geom.line,
+          Guide.colorkey("Reactants"),
+          # Guide.title("Production Reactions"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
+          Scale.y_log10
          )
 
+push!(p1,plottheme)
 println("Plotted p1")
 
 p2 = plot(
@@ -338,16 +357,19 @@ p2 = plot(
           x="Fluence",
           y="PercentTotal",
           color="label",
-#          Geom.smooth,
-          Geom.line,
-          Guide.title("Destruction Reactions"),
+          Geom.smooth,
+#          Geom.line,
+          # Guide.title("Destruction Reactions"),
           Guide.xlabel("Fluence"),
+          Guide.colorkey("Reactants"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
+          Scale.y_log10
          )
 
 
+push!(p2,plottheme)
 println("Plotted p2")
 
 totProdPercent = zeros(0)
@@ -381,16 +403,21 @@ p3 = plot(
           x="Fluence",
           y="PercentTotal",
           color="label",
-#          Geom.smooth,
-          Geom.line,
-          Guide.title("Relative Production and Destruction"),
+          Guide.colorkey("Type"),
+          Geom.smooth,
+#          Geom.line,
+          # Guide.title("Relative Production and Destruction"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
           #Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
           Scale.x_log10(minvalue=xmin,maxvalue=xmax)
          )
 
+push!(p3,plottheme)
 println("Generating final output pdf")
+draw(PDF(path*"f4a.pdf",6inch,4.5inch),p1)
+draw(PDF(path*"f4b.pdf",6inch,4.5inch),p2)
+draw(PDF(path*"f4c.pdf",6inch,4.5inch),p3)
 draw(PDF(path*outfile,6inch,9inch),vstack(p1,p2,p3))
 
 println("Ending rate-plot.jl!")

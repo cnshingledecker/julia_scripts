@@ -2,7 +2,7 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/losalamos/"
+path = "/home/cns/track_losalamos/"
 abundanceFile = "trackplot.csv"
 plotname = "trackplot.pdf"
 xmin = 1
@@ -18,7 +18,7 @@ ytrack=(93/170)*ksize
 
 
 plottheme = Gadfly.Theme(
-                        default_point_size=1.5pt,
+                        default_point_size=1pt,
                         line_width=2pt,
                         minor_label_font_size=13pt,
                         minor_label_color=colorant"black",
@@ -28,7 +28,8 @@ plottheme = Gadfly.Theme(
                         key_title_color=colorant"black",
                         key_title_font_size=15pt,
                         key_label_font_size=13pt,
-                        grid_color=colorant"black")
+                        grid_color=colorant"black",
+                        highlight_width=0pt)
 
 println("Reading input file")
 track = readtable(
@@ -128,7 +129,7 @@ pij = plot(
            Guide.ylabel("z (nm)"),
            Scale.x_continuous(minvalue=0, maxvalue=50),
            Scale.y_continuous(minvalue=0, maxvalue=50),
-          #  Scale.color_discrete_manual(colorant"magenta",colorant"deepskyblue",colorant"green")
+           Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
            )
 push!(pij,plottheme)
 
@@ -144,7 +145,7 @@ pik = plot(
            Coord.cartesian(fixed=true),
            Scale.x_continuous(minvalue=0, maxvalue=50),
            Scale.y_continuous(minvalue=0, maxvalue=50),
-          #  Scale.color_discrete_manual(colorant"magenta",colorant"deepskyblue",colorant"green")
+           Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
           #  Scale.color_discrete_manual(colorant"deepskyblue",colorant"magenta",colorant"green")
           )
 
@@ -161,6 +162,7 @@ pjk_path = plot(
            Coord.cartesian(fixed=true),
            Scale.x_continuous(minvalue=0, maxvalue=50),
            Scale.y_continuous(minvalue=0, maxvalue=50),
+           Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
           #  Scale.color_discrete_manual(colorant"magenta",colorant"deepskyblue",colorant"green")
           #  Scale.color_discrete_manual(colorant"deepskyblue",colorant"magenta",colorant"green")
           )

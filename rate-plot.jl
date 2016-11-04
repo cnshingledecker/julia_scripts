@@ -6,6 +6,8 @@ path = "/home/cns/losalamos/"
 outfile = "rates-plot.pdf"
 xmax = 1e15
 xmin = 1e13
+speciesName = "O3"
+speciesNum  = 7
 
 plottheme = Gadfly.Theme(
                         line_width=2pt,
@@ -161,7 +163,7 @@ reactions[:Type] = "Neutral"
 for i in 1:size(reactions[:Type],1)
   reactants = [reactions[:R1][i],reactions[:R2][i]]
   products  = [reactions[:P1][i],reactions[:P2][i],reactions[:P3][i]]
-  reactions[:Type][i] = reactionclass(reactants,products,"O3")
+  reactions[:Type][i] = reactionclass(reactants,products,speciesName)
 end
 
 
@@ -211,7 +213,7 @@ for i in 1:size(ozoneReactions[:R1],1)
       p3 = species[:Name][outProds[3]]
     end
     # Update the reactions dataframe
-    push!(reactions,[r1;r2;p1;p2;p3;reactionclass(outReacts,outProds,7);0])
+    push!(reactions,[r1;r2;p1;p2;p3;reactionclass(outReacts,outProds,speciesNum);0])
     # Expand the rateAnalytics array
     rateAnalytics = hcat(rateAnalytics,zeros(Int64,size(rateAnalytics,1)))
   end

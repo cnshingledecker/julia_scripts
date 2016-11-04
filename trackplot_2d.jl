@@ -2,7 +2,7 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/track_losalamos/"
+path = "/home/cns/electron_hunt/"
 abundanceFile = "trackplot.csv"
 plotname = "trackplot.pdf"
 xmin = 1
@@ -122,7 +122,8 @@ pij = plot(
            track,
            x="y",
            y="z",
-           color="Species",
+          #  color="Species",
+           color="Action",
            Coord.cartesian(fixed=true),
            Geom.point,
            Guide.xlabel("y (nm)"),
@@ -138,7 +139,8 @@ pik = plot(
            track,
            x="x",
            y="z",
-           color="Species",
+          #  color="Species",
+           color="Action",
            Geom.point,
            Guide.xlabel("x (nm)"),
            Guide.ylabel("z (nm)"),
@@ -155,7 +157,8 @@ pjk_path = plot(
            track,
            x="x",
            y="y",
-           color="Species",
+          #  color="Species",
+           color="Action",
            Geom.point,
            Guide.xlabel("x (nm)"),
            Guide.ylabel("y (nm)"),

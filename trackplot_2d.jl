@@ -2,19 +2,19 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/electron_hunt/"
+path = "/home/cns/losalamos/"
 abundanceFile = "trackplot.csv"
 plotname = "trackplot.pdf"
 xmin = 1
-xmax = 170
-imax = 170.
-jmax = 170.
-kmax = 170.
-isize = 5.e-6*1e7 #nm
-jsize = 5.e-6*1e7 #cm
-ksize = 5.e-6*1e7 #cm
-xtrack=(83/170)*jsize
-ytrack=(93/170)*ksize
+xmax = 119 
+imax = 339.
+jmax = 119.
+kmax = 119.
+isize = 1.0e-5*1e7 #nm
+jsize = 3.5e-6*1e7 #cm
+ksize = 3.5e-6*1e7 #cm
+xtrack=(53/119)*jsize
+ytrack=(61/119)*ksize
 
 
 plottheme = Gadfly.Theme(

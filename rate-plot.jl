@@ -6,7 +6,7 @@ path = "/home/cns/losalamos/"
 outfile = "rates-plot.pdf"
 xmax = 1e15
 xmin = 1e13
-speciesName = "O3"
+speciesName = "O<sub>3</sub>"
 speciesNum  = 7
 
 plottheme = Gadfly.Theme(
@@ -55,8 +55,15 @@ This functions Counts how many of something is in a vector array
 function howmany(thing,list)
   count = 0
   for n = 1:size(list,1)
-    if thing == list[n]
-      count = count + 1
+    println("Thing is $thing and list is $(list[n])")
+    if typeof(thing) == Int
+      if thing == list[n]
+        count =+ 1
+      end
+    else
+      if stripAndAscii(thing) == stripAndAscii(list[n])
+        count =+ 1
+      end
     end
   end
   return count
@@ -114,6 +121,10 @@ function formatMolecule(specieslist)
     i += 1
   end
   return specieslist
+end
+
+function stripAndAscii(string)
+  return ascii(strip(string))
 end
 
 #=
@@ -176,6 +187,9 @@ rateAnalytics = Array(Int64,(0,size(reactions[:R1],1)))
 Go through the reactions output, add any new reactions, and Count up rates
 =#
 for i in 1:size(ozoneReactions[:R1],1)
+  if i%1000 == 0
+    println("$i of $(size(ozoneReactions[:R1],1))")
+  end
   outReacts = [ozoneReactions[:R1][i];ozoneReactions[:R2][i]]
   outProds  = [ozoneReactions[:P1][i];ozoneReactions[:P2][i];ozoneReactions[:P3][i]]
   in_network = false
@@ -335,7 +349,8 @@ end
 
 println("Now generating plots")
 p1 = plot(
-          proddf[xmax.>proddf[:Fluence].>xmin,:],
+          proddf,
+#          proddf[xmax.>proddf[:Fluence].>xmin,:],
 #          proddf,
           x="Fluence",
           y="PercentTotal",
@@ -347,15 +362,16 @@ p1 = plot(
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
-          Scale.y_log10
+#          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
+#          Scale.y_log10
          )
 
 push!(p1,plottheme)
 println("Plotted p1")
 
 p2 = plot(
-          destdf[xmax.>destdf[:Fluence].>xmin,:],
+#          destdf[xmax.>destdf[:Fluence].>xmin,:],
+          destdf,
           x="Fluence",
           y="PercentTotal",
           color="label",
@@ -366,8 +382,8 @@ p2 = plot(
           Guide.colorkey("Reactants"),
           Guide.ylabel("Fraction of total"),
 #          Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
-          Scale.y_log10
+#          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
+#          Scale.y_log10
          )
 
 
@@ -401,7 +417,8 @@ totdf = vcat(
 
 
 p3 = plot(
-          totdf[xmax.>totdf[:Fluence].>xmin,:],
+          totdf,
+#          totdf[xmax.>totdf[:Fluence].>xmin,:],
           x="Fluence",
           y="PercentTotal",
           color="label",
@@ -412,8 +429,9 @@ p3 = plot(
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),
           #Coord.Cartesian(xmin=fluenceArr[1],xmax=fluenceArr[size(fluenceArr,1)])
-          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
+#          Scale.x_log10(minvalue=xmin,maxvalue=xmax)
          )
+println("Plotted p3")
 
 push!(p3,plottheme)
 println("Generating final output pdf")

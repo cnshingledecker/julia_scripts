@@ -29,8 +29,8 @@ plottheme = Gadfly.Theme(
 println("Reading input file")
 modelOutput = readtable(
                   path*abundanceFile,
-                  names = [:AltFluence, :Fluence, :Time, :O2, :O, :O3, :Numprotons],
-                  eltypes = [Float64,Float64,Float64,Int64,Int64,Int64,Int64],
+                  names = [:AltFluence, :Fluence, :Time, :O2, :O, :O3],
+                  eltypes = [Float64,Float64,Float64,Int64,Int64,Int64],
                   header = false
                   )
 
@@ -156,3 +156,4 @@ println("Now exporting plot")
 #draw(PDF(path*plotname,6inch,9inch),vstack(p1,p2,p3,p4))
 draw(PDF(path*plotname, 6inch, 5inch), p1)
 println("Ending script!!")
+quit()

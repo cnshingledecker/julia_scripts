@@ -441,3 +441,4 @@ draw(PDF(path*"f4c.pdf",6inch,4.5inch),p3)
 draw(PDF(path*outfile,6inch,9inch),vstack(p1,p2,p3))
 
 println("Ending rate-plot.jl!")
+quit()

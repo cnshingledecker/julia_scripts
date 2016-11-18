@@ -4,12 +4,12 @@ using DataFrames
 using Colors
 
 # General plot/data variables
-path     = "/home/cns/Dropbox/KMC-MD_project/combined_model/" #"/home/cns/Desktop/"
+path     = "/home/cns/Dropbox/KMC-MD_project/cj_0_khop_20/" #"/home/cns/Desktop/"
 infile1  = "new_kt.wsv"
 infile2  = "new_kthop.wsv"
 infile3  = "pxt.wsv"
 outfile  = "kt.pdf"
-title    = "HFI and Exchange Effects on P<sub>x</sub>(t)"
+title    = "HFI (Chfi=7) and Exchange Effects on P<sub>x</sub>(t)"
 ylabel   = "P<sub>x</sub>(t)"
 keylabel = "Type"
 xmax     = 0
@@ -19,6 +19,8 @@ ymin     = 0
 
 # Plot theme variables
 plottheme = Gadfly.Theme(
+    highlight_width = 0pt,                     
+    default_point_size = 1pt, 
     line_width=2pt,
     minor_label_font_size=13pt,
     minor_label_color=colorant"black",
@@ -52,8 +54,8 @@ pxt = readtable(
 )
 
 kt[:Type] = "Kubo-Toyabe"
-kthop[:Type] = "Hopping(k<sub>hop</sub>=10)"
-pxt[:Type] = "No hops/exch."
+kthop[:Type] = "Hopping(k<sub>hop</sub>=2)"
+pxt[:Type] = "Model"
 
 pltdf = DataFrame()
 
@@ -63,7 +65,7 @@ p1 = plot(
     pltdf[pltdf[:Pxt].<1.0,:],
     x="Time",
     y="Pxt",
-    Geom.line,
+    Geom.point,
     color = "Type",
     Guide.colorkey(keylabel),
     Guide.title(title),

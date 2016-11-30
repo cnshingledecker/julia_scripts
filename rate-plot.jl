@@ -2,7 +2,7 @@ println("Welcome to rate-plot.jl, where rates for CIRISS are plotted")
 using DataFrames
 using Gadfly
 
-path = "/home/cns/losalamos/"
+path = "/scratch/cns7ae/losalamos/"
 outfile = "rates-plot.pdf"
 xmax = 1e15
 xmin = 1e13
@@ -10,6 +10,8 @@ speciesName = "O<sub>3</sub>"
 speciesNum  = 7
 
 plottheme = Gadfly.Theme(
+                        highlight_width=0pt,
+                        default_point_size=2pt,
                         line_width=2pt,
                         minor_label_font_size=13pt,
                         minor_label_color=colorant"black",
@@ -21,7 +23,7 @@ plottheme = Gadfly.Theme(
                         key_label_font_size=13pt,
                         grid_color=colorant"black")
 
-reactions_outpule_filename = "ozone_reactions.csv"
+reactions_outpule_filename = "ozone_reactions.wsv"
 reactionOutput = path*reactions_outpule_filename
 println("The reactions output file is $reactionOutput")
 
@@ -133,7 +135,6 @@ Generate the dataframes containing the input and output dataframes
 println("Generating initial dataframes")
 ozoneReactions = readtable(
                             reactionOutput,
-                            separator = ',',
                             header = true,
                             names = [:R1,:R2,:P1,:P2,:P3,:Fluence],
                             eltypes = [Int64,Int64,Int64,Int64,Int64,Float64]
@@ -236,7 +237,7 @@ for i in 1:size(ozoneReactions[:R1],1)
   if ozoneReactions[:Fluence][i] > fluenceLimit
     rateAnalytics = vcat(rateAnalytics,transpose(reactions[:Count]))
     reactions[:Count] = 0
-    fluenceLimit += 0.2*fluenceLimit
+    fluenceLimit += 0.35*fluenceLimit
     fluenceArr = vcat(fluenceArr,fluenceLimit)
 #    println("New fluence limit = $fluenceLimit")
   end
@@ -355,8 +356,8 @@ p1 = plot(
           x="Fluence",
           y="PercentTotal",
           color="label",
-          Geom.smooth,
-#          Geom.line,
+#          Geom.smooth,
+          Geom.point,
           Guide.colorkey("Reactants"),
           # Guide.title("Production Reactions"),
           Guide.xlabel("Fluence"),
@@ -375,8 +376,8 @@ p2 = plot(
           x="Fluence",
           y="PercentTotal",
           color="label",
-          Geom.smooth,
-#          Geom.line,
+#          Geom.smooth,
+          Geom.point,
           # Guide.title("Destruction Reactions"),
           Guide.xlabel("Fluence"),
           Guide.colorkey("Reactants"),
@@ -423,8 +424,8 @@ p3 = plot(
           y="PercentTotal",
           color="label",
           Guide.colorkey("Type"),
-          Geom.smooth,
-#          Geom.line,
+#          Geom.smooth,
+          Geom.point,
           # Guide.title("Relative Production and Destruction"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),

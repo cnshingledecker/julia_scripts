@@ -4,7 +4,7 @@ using DataFrames
 using Colors
 
 # General plot/data variables
-path     = "/home/cns/Dropbox/KMC-MD_project/cj_0_khop_20/" #"/home/cns/Desktop/"
+path     = "/scratch/cns7ae/kmc-spin/" #"/home/cns/Desktop/"
 infile1  = "new_kt.wsv"
 infile2  = "new_kthop.wsv"
 infile3  = "pxt.wsv"
@@ -81,3 +81,4 @@ println("Now exporting PDF for $outfile")
 draw(PDF(path*outfile,6inch,5inch),p1)
 
 println("ENDING SCRIPT")
+quit()

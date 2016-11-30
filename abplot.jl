@@ -2,10 +2,10 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/losalamos/"
-abundanceFile = "abundance.csv"
+path = "/scratch/cns7ae/losalamos/"
+abundanceFile = "abundance.wsv"
 plotname = "f3.pdf" #"abundance_plot.pdf"
-thick = 6.e-6
+thick = 1.0e-5 
 edge  = 3.5e-6
 denom = thick*edge*edge*1.0e20
 iceSize = (170^3)/3
@@ -29,8 +29,8 @@ plottheme = Gadfly.Theme(
 println("Reading input file")
 modelOutput = readtable(
                   path*abundanceFile,
-                  names = [:AltFluence, :Fluence, :Time, :O2, :O, :O3],
-                  eltypes = [Float64,Float64,Float64,Int64,Int64,Int64],
+                  names = [:Fluence, :Time, :O2, :O, :O3],
+                  eltypes = [Float64,Float64,Int64,Int64,Int64],
                   header = false
                   )
 
@@ -43,8 +43,7 @@ O2ab_df   = DataFrame()
 println("Populating dataframes")
 Oab_df = vcat(Oab_df,
               DataFrame(
-                        Fluence=modelOutput[:AltFluence],
-                        # Fluence=modelOutput[:Fluence],
+                        Fluence=modelOutput[:Fluence],
                         Abundance=modelOutput[:O]/denom,
                         Species="O",
                         Type="Theory"
@@ -55,8 +54,7 @@ Oab_df = vcat(Oab_df,
 O3ab_df = vcat(
                O3ab_df,
                DataFrame(
-                         Fluence=modelOutput[:AltFluence],
-                        #  Fluence=modelOutput[:Fluence],
+                         Fluence=modelOutput[:Fluence],
                          Abundance=modelOutput[:O3]/denom,
                          Species="O<sub>3</sub>",
                          Type="Theory"
@@ -67,8 +65,7 @@ O3ab_df = vcat(
 O2ab_df = vcat(
                O2ab_df,
                DataFrame(
-                         Fluence=modelOutput[:AltFluence],
-                        #  Fluence=modelOutput[:Fluence],
+                         Fluence=modelOutput[:Fluence],
                          Abundance=modelOutput[:O2]/denom,
                          Species="O<sub>2</sub>",
                          Type="Theory"
@@ -77,22 +74,19 @@ O2ab_df = vcat(
 
 ab_tot_df = vcat(ab_tot_df,
                  DataFrame(
-                           Fluence=modelOutput[:AltFluence],
-                          #  Fluence=modelOutput[:Fluence],
+                           Fluence=modelOutput[:Fluence],
                            Abundance=modelOutput[:O2]/denom,
                            Species="O<sub>2</sub>",
                            Type="Theory"
                            ),
                  DataFrame(
-                           Fluence=modelOutput[:AltFluence],
-                          #  Fluence=modelOutput[:Fluence],
+                           Fluence=modelOutput[:Fluence],
                            Abundance=modelOutput[:O]/denom,
                            Species="O",
                            Type="Theory"
                            ),
                  DataFrame(
-                           Fluence=modelOutput[:AltFluence],
-                          #  Fluence=modelOutput[:Fluence],
+                           Fluence=modelOutput[:Fluence],
                            Abundance=modelOutput[:O3]/denom,
                            Species="O<sub>3</sub>",
                            Type="Theory"

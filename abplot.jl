@@ -2,14 +2,14 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/scratch/cns7ae/losalamos/"
+path = "/scratch/cns7ae/losalamos9/"
 abundanceFile = "abundance.wsv"
 plotname = "f3.pdf" #"abundance_plot.pdf"
 thick = 1.0e-5 
 edge  = 3.5e-6
 denom = thick*edge*edge*1.0e20
 iceSize = (170^3)/3
-xmax    = 1.0e16
+xmax    = 1.0e17
 xmin    = 1.0e12
 ymin    = (10^(-0.5)) #0.5
 species = "O3" # all, O2, O, O3
@@ -29,8 +29,8 @@ plottheme = Gadfly.Theme(
 println("Reading input file")
 modelOutput = readtable(
                   path*abundanceFile,
-                  names = [:Fluence, :Time, :O2, :O, :O3],
-                  eltypes = [Float64,Float64,Int64,Int64,Int64],
+                  names = [:Fluence, :Time, :O2, :O, :O3, :Oex,:O2ex,:O3ex,:Atoms],
+                  eltypes = [Float64,Float64,Int64,Int64,Int64,Int64,Int64,Int64,Int64],
                   header = false
                   )
 
@@ -120,7 +120,7 @@ elseif species == "O3"
 end
 
 println("Generating plots")
-p1 = plot(
+o3 = plot(
           O3exp,
           x="Fluence",
           y="Abundance",
@@ -138,16 +138,30 @@ plot_df = plot_df[xmax.>plot_df[:Fluence].>xmin,:]
 plot_df = plot_df[plot_df[:Abundance].>ymin,:]
 
 
-push!(p1,layer(
+push!(o3,layer(
                plot_df,
                x="Fluence",
                y="Abundance",
                color="Type",
                Geom.line))
-push!(p1,plottheme)
+push!(o3,plottheme)
+
+o2 = plot(
+          O2ab_df,
+          x="Fluence",
+          y="Abundance",
+          color="Type",
+          Geom.line,
+          # Guide.title("Species vs. Fluence"),
+          Guide.xlabel("Fluence (ions cm<sup>-2</sup>)"),
+          Guide.ylabel("Abundance (cm<sup>-3</sup>) * 10<sup>20</sup>"),
+          Scale.x_log10(minvalue=xmin,maxvalue=xmax),
+)
+push!(o2,plottheme)
+
 
 println("Now exporting plot")
 #draw(PDF(path*plotname,6inch,9inch),vstack(p1,p2,p3,p4))
-draw(PDF(path*plotname, 6inch, 5inch), p1)
+#draw(PDF(path*plotname, 6inch, 5inch), p1)
 println("Ending script!!")
-quit()
+#quit()

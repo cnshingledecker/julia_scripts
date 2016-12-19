@@ -1,4 +1,4 @@
-println("Welcome to rate-plot.jl, where rates for CIRISS are plotted")
+println("Welcome to rate-plot.jl, where rates for CIRIS are plotted")
 using DataFrames
 using Gadfly
 
@@ -95,12 +95,15 @@ function reactionclass(reactants,products,species)
   testReact = howmany(species,reactants)
 #  println("testReact=$testReact")
   testProd = howmany(species,products)
-#  println("testProd=$testProd")
+  println("testProd=$testProd")
   if testReact > testProd
+#    println("Destruction")
     return "Destruction"
   elseif testProd > testReact
+#    println("Production")
     return "Production"
   else
+#    println("Neutral")
     return "Neutral"
   end
 end
@@ -111,12 +114,13 @@ This function takes the species names and makes proper superscripts and subscrip
 function formatMolecule(specieslist)
   i = 1
   for species in specieslist
-    species = replace(species,"+","<sup>+</sup> ")
-    species = replace(species,"-","<sup>-</sup> ")
+    species = replace(species,"+","<sup>+</sup>")
+    species = replace(species,"-","<sup>-</sup>")
+    species = replace(species,"*","<sup>*</sup>") 
     for letter in species
       test = tryparse(Int64,"$letter")
       if ( isnull(test) == false )
-        species = replace(species,"$letter","<sub>$letter</sub> ")
+        species = replace(species,"$letter","<sub>$letter</sub>")
       end
     end
     specieslist[i] = species
@@ -133,30 +137,51 @@ end
 Generate the dataframes containing the input and output dataframes
 =#
 println("Generating initial dataframes")
+
 ozoneReactions = readtable(
-                            reactionOutput,
-                            header = true,
-                            names = [:R1,:R2,:P1,:P2,:P3,:Fluence],
-                            eltypes = [Int64,Int64,Int64,Int64,Int64,Float64]
+    reactionOutput,
+    header = true,
+    names = [:R1,:R2,:P1,:P2,:P3,:Fluence],
+    eltypes = [Int64,Int64,Int64,Int64,Int64,Float64]
                             )
+
 println("Generated dataframe of reactions output")
 
+println("Now generating species dataframe")
+
 species = readtable(
-                    speciesInput,
-                    names = [:Name, :E_D],
-                    eltypes = [UTF8String,Float64],
-                    header = false
+    speciesInput,
+    names = [:Name, :E_D],
+    eltypes = [String,Float64],
+    separator = ',',
+    header = false,
+    allowcomments = true,
+    commentmark = '!'
 )
+
 println("Generated species input dataframe")
 
-reactions = readtable(
-                      reactionsInput,
-                      header = false,
-                      names = [:R1,:R2,:P1,:P2,:P3],
-                      eltypes = [UTF8String,UTF8String,UTF8String,UTF8String,UTF8String]
+inreactions = readtable(
+    reactionsInput,
+    names = [:R1,:R2,:P1,:P2,:P3,:α, :β, :γ, :rtype, :source],
+    separator = ',',
+    eltypes = [String,String,String,String,String,Float64,Float64,Float64,Int64,String],
+    header = false,
+    allowcomments = true,
+    ignorepadding = true,
+    commentmark = '!'
 )
+
+println("Generated inreactions dataframe")
+
+reactions = DataFrame()
+reactions[:R1] = inreactions[:R1]
+reactions[:R2] = inreactions[:R2]
+reactions[:P1] = inreactions[:P1]
+reactions[:P2] = inreactions[:P2]
+reactions[:P3] = inreactions[:P3]
+
 println("Generated reactions input dataframe")
-println(reactions[:R1])
 
 # Format strings in each dataframe
 reactions[:R1] = formatMolecule(reactions[:R1])
@@ -357,7 +382,7 @@ p1 = plot(
           y="PercentTotal",
           color="label",
 #          Geom.smooth,
-          Geom.point,
+          Geom.line,
           Guide.colorkey("Reactants"),
           # Guide.title("Production Reactions"),
           Guide.xlabel("Fluence"),
@@ -377,7 +402,7 @@ p2 = plot(
           y="PercentTotal",
           color="label",
 #          Geom.smooth,
-          Geom.point,
+          Geom.line,
           # Guide.title("Destruction Reactions"),
           Guide.xlabel("Fluence"),
           Guide.colorkey("Reactants"),
@@ -425,7 +450,7 @@ p3 = plot(
           color="label",
           Guide.colorkey("Type"),
 #          Geom.smooth,
-          Geom.point,
+          Geom.line,
           # Guide.title("Relative Production and Destruction"),
           Guide.xlabel("Fluence"),
           Guide.ylabel("Fraction of total"),

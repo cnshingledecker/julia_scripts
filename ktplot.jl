@@ -4,7 +4,7 @@ using DataFrames
 using Colors
 
 # General plot/data variables
-path     = "/home/cns/Dropbox/KMC-MD_project/kmc-spin/" #"/home/cns/Desktop/"
+path     = "/scratch/cns7ae/kmc-spin/" #"/home/cns/Desktop/"
 infile1  = "new_kt.wsv"
 infile2  = "new_kthop.wsv"
 infile3  = "pxt.wsv"

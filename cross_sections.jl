@@ -2,7 +2,7 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/losalamos/"
+path = "/scratch/cns7ae/ciris/sigtest/"
 protonFile = "proton_sigmas.csv"
 electronFile = "electron_sigmas.csv"
 plotname = "cross_sections.pdf"
@@ -25,55 +25,144 @@ plottheme = Gadfly.Theme(
 println("Reading input file")
 σ_proton = readtable(
                   path*protonFile,
-                  names = [:energy, :σ, :Type],
-                  eltypes = [Float64, Float64, UTF8String],
+                  names = [:energy, :σ, :Type, :Species],
+                  eltypes = [Float64, Float64, String, String],
                   header = false
                  )
 
 σ_electron = readtable(
                   path*electronFile,
-                  names = [:energy, :σ, :Type],
-                  eltypes = [Float64, Float64, UTF8String],
+                  names = [:energy, :σ, :Type, :Species],
+                  eltypes = [Float64, Float64, String, String],
                   header = false
                  )
+
+#println("Now filtering out Total elastic cross-section")
 
 
 println("Now plotting data")
 
-p1 = plot(
-           σ_proton,
+σ_proton = σ_proton[σ_proton[:σ].>10^(-20.0),:]
+σ_proton = σ_proton[σ_proton[:σ].<10^(-15.0),:]
+σ_electron = σ_electron[σ_electron[:σ].>10^(-20.0),:]
+σ_electron = σ_electron[σ_electron[:σ].<10^(-15.0),:]
+
+red_sig_elec = DataFrame()
+red_sig_elec = vcat(red_sig_elec,
+                     σ_electron[σ_electron[:Type].=="Elastic",:],
+                     σ_electron[σ_electron[:Type].=="Excitation",:],
+                     σ_electron[σ_electron[:Type].=="Ionization",:])
+
+σ_electron = red_sig_elec
+
+sort!(σ_proton,cols=[:Type])
+sort!(σ_electron,cols=[:Type])
+
+sigo = plot(
+           σ_proton[σ_proton[:Species].=="O",:],
            x="energy",
            y="σ",
            color="Type",
            Geom.line,
            Scale.x_log10,
-           Scale.y_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
            Guide.xlabel("Particle Energy (eV)"),
            Guide.ylabel("σ (cm<sup>2</sup>)"),
-           Guide.title("Proton Cross Sections vs. Particle Energy"),
+#           Guide.title("Proton Cross Sections vs. Particle Energy"),
            Theme(default_point_size=1.5pt)
           )
 
-push!(p1,plottheme)
+push!(sigo,plottheme)
 
-p2 = plot(
-           σ_electron,
+sigo2 = plot(
+           σ_proton[σ_proton[:Species].=="O2",:],
            x="energy",
            y="σ",
            color="Type",
            Geom.line,
            Scale.x_log10,
-           Scale.y_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
            Guide.xlabel("Particle Energy (eV)"),
            Guide.ylabel("σ (cm<sup>2</sup>)"),
-           Guide.title("Electron Cross Sections vs. Particle Energy"),
+#           Guide.title("Proton Cross Sections vs. Particle Energy"),
            Theme(default_point_size=1.5pt)
           )
 
-push!(p2,plottheme)
+push!(sigo2,plottheme)
+
+sigo3 = plot(
+           σ_proton[σ_proton[:Species].=="O3",:],
+           x="energy",
+           y="σ",
+           color="Type",
+           Geom.line,
+           Scale.x_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
+           Guide.xlabel("Particle Energy (eV)"),
+           Guide.ylabel("σ (cm<sup>2</sup>)"),
+#           Guide.title("Proton Cross Sections vs. Particle Energy"),
+           Theme(default_point_size=1.5pt)
+          )
+
+push!(sigo3,plottheme)
+
+
+esigo = plot(
+           σ_electron[σ_electron[:Species].=="O",:],
+           x="energy",
+           y="σ",
+           color="Type",
+           Geom.line,
+           Scale.x_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
+           Guide.xlabel("Particle Energy (eV)"),
+           Guide.ylabel("σ (cm<sup>2</sup>)"),
+#           Guide.title("Electron Cross Sections vs. Particle Energy"),
+           Theme(default_point_size=1.5pt)
+          )
+
+push!(esigo,plottheme)
+
+esigo2 = plot(
+           σ_electron[σ_electron[:Species].=="O2",:],
+           x="energy",
+           y="σ",
+           color="Type",
+           Geom.line,
+           Scale.x_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
+           Guide.xlabel("Particle Energy (eV)"),
+           Guide.ylabel("σ (cm<sup>2</sup>)"),
+#           Guide.title("Electron Cross Sections vs. Particle Energy"),
+           Theme(default_point_size=1.5pt)
+          )
+
+push!(esigo2,plottheme)
+
+esigo3 = plot(
+           σ_electron[σ_electron[:Species].=="O3",:],
+           x="energy",
+           y="σ",
+           color="Type",
+           Geom.line,
+           Scale.x_log10,
+           Scale.y_log10(minvalue=10^(-20.0),maxvalue=10^(-15.0)),
+           Guide.xlabel("Particle Energy (eV)"),
+           Guide.ylabel("σ (cm<sup>2</sup>)"),
+#           Guide.title("Electron Cross Sections vs. Particle Energy"),
+           Theme(default_point_size=1.5pt)
+          )
+
+push!(esigo3,plottheme)
 
 println("Now exporting plot")
-draw(PDF(path*"f2a.pdf", 6inch, 4.5inch), p1)
-draw(PDF(path*"f2b.pdf", 6inch, 4.5inch), p2)
-draw(PDF(path*plotname, 6inch, 9inch), vstack(p1,p2))
+draw(PDF(path*"f1a.pdf", 6inch, 4.5inch), sigo)
+draw(PDF(path*"f1b.pdf", 6inch, 4.5inch), sigo2)
+draw(PDF(path*"f1c.pdf", 6inch, 4.5inch), sigo3)
+draw(PDF(path*"f2a.pdf", 6inch, 4.5inch), esigo)
+draw(PDF(path*"f2b.pdf", 6inch, 4.5inch), esigo2)
+draw(PDF(path*"f2c.pdf", 6inch, 4.5inch), esigo3)
+#draw(PDF(path*"f2a.pdf", 6inch, 4.5inch), p1)
+#draw(PDF(path*"f2b.pdf", 6inch, 4.5inch), p2)
+#draw(PDF(path*plotname, 6inch, 9inch), vstack(p1,p2))
 println("Now ending script")

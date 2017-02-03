@@ -2,23 +2,21 @@ using DataFrames
 using Gadfly
 
 # Input parameters
-path = "/home/cns/losalamos/"
+path = "/scratch/cns7ae/ciris/trackplot_final17/"
 abundanceFile = "trackplot.csv"
 plotname = "trackplot.pdf"
-xmin = 1
-xmax = 119 
-imax = 339.
-jmax = 119.
-kmax = 119.
-isize = 1.0e-5*1e7 #nm
-jsize = 3.5e-6*1e7 #cm
-ksize = 3.5e-6*1e7 #cm
-xtrack=(53/119)*jsize
-ytrack=(61/119)*ksize
+imax = 428.
+jmax = 428.
+kmax = 428.
+isize = 1.3e-5*1e7 #nm
+jsize = 1.3e-5*1e7 #cm
+ksize = 1.3e-5*1e7 #cm
+xtrack=(237.0/jmax)*(jsize)
+ytrack=(249.0/kmax)*(ksize)
 
 
 plottheme = Gadfly.Theme(
-                        default_point_size=1pt,
+                        default_point_size=1.5pt,
                         line_width=2pt,
                         minor_label_font_size=13pt,
                         minor_label_color=colorant"black",
@@ -27,7 +25,7 @@ plottheme = Gadfly.Theme(
                         key_label_color=colorant"black",
                         key_title_color=colorant"black",
                         key_title_font_size=15pt,
-                        key_label_font_size=13pt,
+                        key_label_font_size=10pt,
                         grid_color=colorant"black",
                         highlight_width=0pt)
 
@@ -35,9 +33,10 @@ println("Reading input file")
 track = readtable(
                   path*abundanceFile,
                   names = [:z, :y, :x, :Species, :Action],
-                  eltypes = [Float64, Float64, Float64, UTF8String, UTF8String],
+                  eltypes = [Float64, Float64, Float64, String, String],
                   header = false
                  )
+
 
 for i in 1:nrow(track)
   track[:z][i] = ((track[:z][i]/imax)*isize)
@@ -94,11 +93,11 @@ ind = round(Int,((P*tot)/100))
 radius = dens_df[:r][ind]
 
 function circletop(x,h,k,r)
-  sqrt(r^2 - (x-h)^2) + k
+  sqrt((r^2 - (x-h)^2)) + k
 end
 
 function circlebottom(x,h,k,r)
-   -1*sqrt(r^2 - (x-h)^2) + k
+   -1*sqrt((r^2 - (x-h)^2)) + k
 end
 
 #Generate the circle that will be plotted over the top-down graph
@@ -118,62 +117,92 @@ end
 
 println("Now plotting data")
 
+
 pij = plot(
-           track,
+           track[100.>track[:z].>1,:],
            x="y",
            y="z",
-          #  color="Species",
-           color="Action",
-           Coord.cartesian(fixed=true),
+           Coord.cartesian(aspect_ratio=1),
            Geom.point,
            Guide.xlabel("y (nm)"),
            Guide.ylabel("z (nm)"),
-           Scale.x_continuous(minvalue=0, maxvalue=50),
+           Guide.manual_color_key(
+                                   "Species",
+                                   ["Proton","Electron"],
+                                   ["green","deepskyblue"],
+                                  ),
+           Scale.x_continuous(minvalue=50, maxvalue=100),
            Scale.y_continuous(minvalue=0, maxvalue=50),
            Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
            )
 push!(pij,plottheme)
 
+proton_track = DataFrame()
+proton_track[:z] = linspace(1,100,100)
+proton_track[:y] = 71.986
+proton_track[:x] = 75.6308
+proton_track[:Species] = "proton"
+
+push!(pij,layer(proton_track[proton_track[:Species].=="proton",:],x="y",y="z",Geom.line,Theme(default_color=colorant"green",line_style=Gadfly.get_stroke_vector(:dash),line_width=2pt)))
+
 
 pik = plot(
-           track,
+           track[100.>track[:z].>1,:],
            x="x",
            y="z",
-          #  color="Species",
-           color="Action",
            Geom.point,
+           Guide.manual_color_key(
+                                   "Species",
+                                   ["Proton","Electron"],
+                                   ["green","deepskyblue"],
+                                  ),
            Guide.xlabel("x (nm)"),
            Guide.ylabel("z (nm)"),
-           Coord.cartesian(fixed=true),
-           Scale.x_continuous(minvalue=0, maxvalue=50),
+           Coord.cartesian(aspect_ratio=1),
+           Scale.x_continuous(minvalue=50, maxvalue=100),
            Scale.y_continuous(minvalue=0, maxvalue=50),
            Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
           #  Scale.color_discrete_manual(colorant"deepskyblue",colorant"magenta",colorant"green")
           )
 
 push!(pik,plottheme)
+push!(pik,layer(proton_track[proton_track[:Species].=="proton",:],x="x",y="z",Geom.line,Theme(default_color=colorant"green",line_style=Gadfly.get_stroke_vector(:dash),line_width=2pt)))
+
 
 pjk_path = plot(
-           track,
-           x="x",
-           y="y",
-          #  color="Species",
-           color="Action",
-           Geom.point,
-           Guide.xlabel("x (nm)"),
-           Guide.ylabel("y (nm)"),
-           Coord.cartesian(fixed=true),
-           Scale.x_continuous(minvalue=0, maxvalue=50),
-           Scale.y_continuous(minvalue=0, maxvalue=50),
-           Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
-          #  Scale.color_discrete_manual(colorant"magenta",colorant"deepskyblue",colorant"green")
-          #  Scale.color_discrete_manual(colorant"deepskyblue",colorant"magenta",colorant"green")
-          )
+                track,
+                Guide.xlabel("x (nm)"),
+                Guide.ylabel("y (nm)"),
+                Coord.cartesian(aspect_ratio=1.0),
+                Scale.x_continuous(minvalue=50, maxvalue=100),
+                Scale.y_continuous(minvalue=50, maxvalue=100),
+                Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue"),
+           Guide.manual_color_key(
+                                   "Species",
+                                   ["Proton","Electron"],
+                                   ["green","deepskyblue"],
+                                  ),
+                layer(
+                      x=[75.63],
+                      y=[71.986],
+                      Geom.point,
+                      Theme(default_color=colorant"green",
+                             default_point_size=3pt,
+                             highlight_width=0pt)
+                      ),
+                layer(
+                      x="x",
+                      y="y",
+                      Geom.point,
+                      ),
+
+                )
 push!(pjk_path,plottheme)
+#push!(pjk_path,layer(track[track[:Species].=="proton",:],x="x",y="y",Geom.point,Theme(default_color=colorant"green",default_point_size=5pt,highlight_width=0pt))) 
 
 pjk = plot(
-           dens_df[50.>dens_df[:x].>0,:],
-          #  dens_df,
+#           dens_df[50.>dens_df[:x].>0,:],
+           dens_df,
            x="x",
            y="y",
 #           color="Species",
@@ -183,12 +212,31 @@ pjk = plot(
            Guide.ylabel("y (nm)"),
            Coord.cartesian(fixed=true),
            Geom.histogram2d(xbincount=55, ybincount=55),
-           Scale.x_continuous(minvalue=0, maxvalue=50),
-           Scale.y_continuous(minvalue=0, maxvalue=50),
-          )
+#           Scale.x_continuous(minvalue=0, maxvalue=50),
+#           Scale.y_continuous(minvalue=0, maxvalue=50),
+            Scale.color_log10(colormap=Scale.lab_gradient(
+                                                          colorant"darkblue",
+                                                          colorant"mediumblue",
+                                                          colorant"deepskyblue",
+                                                          colorant"turquoise",
+                                                          colorant"lightgreen",
+                                                          colorant"gold",
+                                                          colorant"yellow"
+                                                          ))
+            )
 push!(pjk,plottheme)
 
-push!(pjk,layer(x=xpoint,y=ypoint,Geom.path,Theme(default_color=colorant"red")))
+circle_df = DataFrame()
+circle_df = vcat(circle_df,
+                  DataFrame(
+                            x=xpoint,
+                            y=ypoint,
+                            Action="radius= 18.2 nm"),
+                  )
+
+
+#push!(pjk,layer(circle_df,x="x",y="y",Geom.point,Theme(default_color=colorant"red")))
+push!(pjk,layer(circle_df,x="x",y="y",Geom.path,Theme(default_color=colorant"red")))
 push!(pjk,layer(x=xpoint,y=ypoint2,Geom.path,Theme(default_color=colorant"red")))
 
 
@@ -217,8 +265,8 @@ push!(pjk,layer(x=xpoint,y=ypoint2,Geom.path,Theme(default_color=colorant"red"))
 #             Geom.subplot_grid(Geom.point)))
 
 println("Now exporting plot")
-draw(PDF(path*"f1a.pdf", 6inch, 5inch), pij)
-draw(PDF(path*"f1b.pdf", 6inch, 5inch), pik)
-draw(PDF(path*"f1c.pdf", 6inch, 5inch), pjk_path)
-draw(PDF(path*"f1d.pdf", 6inch, 5inch), pjk)
+draw(PDF(path*"f3a.pdf", 6inch, 5inch), pij)
+draw(PDF(path*"f3b.pdf", 6inch, 5inch), pik)
+draw(PDF(path*"f3c.pdf", 6inch, 5inch), pjk_path)
+draw(PDF(path*"f3d.pdf", 6inch, 5inch), pjk)
 println("Now ending script")

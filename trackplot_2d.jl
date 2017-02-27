@@ -1,5 +1,6 @@
 using DataFrames
 using Gadfly
+using Cairo
 
 # Input parameters
 path = "/scratch/cns7ae/ciris/trackplot_final17/"
@@ -8,9 +9,9 @@ plotname = "trackplot.pdf"
 imax = 428.
 jmax = 428.
 kmax = 428.
-isize = 1.3e-5*1e7 #nm
-jsize = 1.3e-5*1e7 #cm
-ksize = 1.3e-5*1e7 #cm
+isize = 1.3e-5*1e8 #nm
+jsize = 1.3e-5*1e8 #cm
+ksize = 1.3e-5*1e8 #cm
 xtrack=(237.0/jmax)*(jsize)
 ytrack=(249.0/kmax)*(ksize)
 
@@ -25,7 +26,7 @@ plottheme = Gadfly.Theme(
                         key_label_color=colorant"black",
                         key_title_color=colorant"black",
                         key_title_font_size=15pt,
-                        key_label_font_size=10pt,
+                        key_label_font_size=13pt,
                         grid_color=colorant"black",
                         highlight_width=0pt)
 
@@ -119,72 +120,72 @@ println("Now plotting data")
 
 
 pij = plot(
-           track[100.>track[:z].>1,:],
+           track[1000.>track[:z].>1,:],
            x="y",
            y="z",
            Coord.cartesian(aspect_ratio=1),
            Geom.point,
-           Guide.xlabel("y (nm)"),
-           Guide.ylabel("z (nm)"),
+           Guide.xlabel("y (\u212b)"),
+           Guide.ylabel("z (\u212b)"),
            Guide.manual_color_key(
                                    "Species",
-                                   ["Proton","Electron"],
+                                   ["Primary Ion","Secondary Electron"],
                                    ["green","deepskyblue"],
                                   ),
-           Scale.x_continuous(minvalue=50, maxvalue=100),
-           Scale.y_continuous(minvalue=0, maxvalue=50),
+           Scale.x_continuous(minvalue=500, maxvalue=1000),
+           Scale.y_continuous(minvalue=0, maxvalue=500),
            Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
            )
 push!(pij,plottheme)
 
 proton_track = DataFrame()
-proton_track[:z] = linspace(1,100,100)
-proton_track[:y] = 71.986
-proton_track[:x] = 75.6308
+proton_track[:z] = linspace(1,1000,1000)
+proton_track[:y] = 719.86
+proton_track[:x] = 756.308
 proton_track[:Species] = "proton"
 
-push!(pij,layer(proton_track[proton_track[:Species].=="proton",:],x="y",y="z",Geom.line,Theme(default_color=colorant"green",line_style=Gadfly.get_stroke_vector(:dash),line_width=2pt)))
+push!(pij,layer(proton_track[proton_track[:Species].=="proton",:],x="y",y="z",Geom.line,Theme(default_color=colorant"green",line_width=2pt)))
 
 
 pik = plot(
-           track[100.>track[:z].>1,:],
+           track[1000.>track[:z].>1,:],
            x="x",
            y="z",
            Geom.point,
            Guide.manual_color_key(
                                    "Species",
-                                   ["Proton","Electron"],
+                                   ["Primary Ion","Secondary Electron"],
                                    ["green","deepskyblue"],
                                   ),
-           Guide.xlabel("x (nm)"),
-           Guide.ylabel("z (nm)"),
+           Guide.xlabel("x (\u212b)"),
+           Guide.ylabel("z (\u212b)"),
            Coord.cartesian(aspect_ratio=1),
-           Scale.x_continuous(minvalue=50, maxvalue=100),
-           Scale.y_continuous(minvalue=0, maxvalue=50),
+           Scale.x_continuous(minvalue=500, maxvalue=1000),
+           Scale.y_continuous(minvalue=0, maxvalue=500),
            Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue")
           #  Scale.color_discrete_manual(colorant"deepskyblue",colorant"magenta",colorant"green")
           )
 
 push!(pik,plottheme)
-push!(pik,layer(proton_track[proton_track[:Species].=="proton",:],x="x",y="z",Geom.line,Theme(default_color=colorant"green",line_style=Gadfly.get_stroke_vector(:dash),line_width=2pt)))
+push!(pik,layer(proton_track[proton_track[:Species].=="proton",:],x="x",y="z",Geom.line,Theme(default_color=colorant"green",line_width=2pt)))
 
 
 pjk_path = plot(
                 track,
-                Guide.xlabel("x (nm)"),
-                Guide.ylabel("y (nm)"),
+                Guide.xlabel("x (\u212b)"),
+                Guide.ylabel("y (\u212b)"),
                 Coord.cartesian(aspect_ratio=1.0),
-                Scale.x_continuous(minvalue=50, maxvalue=100),
-                Scale.y_continuous(minvalue=50, maxvalue=100),
+                Scale.x_continuous(minvalue=500, maxvalue=1000),
+                Scale.y_continuous(minvalue=500, maxvalue=1000),
                 Scale.color_discrete_manual(colorant"magenta",colorant"green",colorant"deepskyblue"),
            Guide.manual_color_key(
                                    "Species",
-                                   ["Proton","Electron"],
+                                   ["Primary Ion","Secondary Electron"],
                                    ["green","deepskyblue"],
                                   ),
                 layer(
-                      x=[75.63],
-                      y=[71.986],
+                      x=[756.3],
+                      y=[719.86],
                       Geom.point,
                       Theme(default_color=colorant"green",
                              default_point_size=3pt,
@@ -231,13 +232,13 @@ circle_df = vcat(circle_df,
                   DataFrame(
                             x=xpoint,
                             y=ypoint,
-                            Action="radius= 18.2 nm"),
+                            Action="radius= 182 \u212b"),
                   )
 
 
 #push!(pjk,layer(circle_df,x="x",y="y",Geom.point,Theme(default_color=colorant"red")))
-push!(pjk,layer(circle_df,x="x",y="y",Geom.path,Theme(default_color=colorant"red")))
-push!(pjk,layer(x=xpoint,y=ypoint2,Geom.path,Theme(default_color=colorant"red")))
+#push!(pjk_path,layer(circle_df,x="x",y="y",Geom.path,Theme(default_color=colorant"red")))
+#push!(pjk_path,layer(x=xpoint,y=ypoint2,Geom.path,Theme(default_color=colorant"red")))
 
 
 #set_default_plot_size(50cm, 7.5cm)
@@ -265,8 +266,14 @@ push!(pjk,layer(x=xpoint,y=ypoint2,Geom.path,Theme(default_color=colorant"red"))
 #             Geom.subplot_grid(Geom.point)))
 
 println("Now exporting plot")
-draw(PDF(path*"f3a.pdf", 6inch, 5inch), pij)
-draw(PDF(path*"f3b.pdf", 6inch, 5inch), pik)
-draw(PDF(path*"f3c.pdf", 6inch, 5inch), pjk_path)
-draw(PDF(path*"f3d.pdf", 6inch, 5inch), pjk)
+draw(PDF(path*"f3a.pdf", 5.5inch, 3.5inch), pij)
+draw(PDF(path*"f3b.pdf", 5.5inch, 3.5inch), pik)
+draw(PDF(path*"f3c.pdf", 5.5inch, 3.5inch), pjk_path)
+draw(PDF(path*"f3d.pdf", 5.5inch, 3.5inch), pjk)
+
+draw(PNG(path*"f3a.png", 6.5inch, 5inch), pij)
+draw(PNG(path*"f3b.png", 6.5inch, 5inch), pik)
+draw(PNG(path*"f3c.png", 6.5inch, 5inch), pjk_path)
+draw(PNG(path*"f3d.png", 6.5inch, 5inch), pjk)
+
 println("Now ending script")
